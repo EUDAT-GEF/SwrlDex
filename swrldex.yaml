@@ -1,0 +1,23 @@
+server:
+    applicationContextPath: /
+    applicationConnectors:
+        - type: http
+          port: 8090
+          # time before the request expires
+          idleTimeout: 180 seconds
+    adminConnectors:
+        - type: http
+          port: 8091
+
+logging:
+    # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
+    level: WARN
+    loggers:
+        eu.eudat.swrldex: INFO
+
+    appenders:
+        - type: console
+    #   - type: file
+    #     currentLogFilename: /var/log/swrldex/access.log
+    #     archivedLogFilenamePattern: /var/log/swrldex/access-%d.log.gz
+    #     archivedFileCount: 5
