@@ -3,7 +3,7 @@ package eu.eudat.swrldex;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import eu.eudat.swrldex.core.Tutorial;
+import eu.eudat.swrldex.core.RuleEngine;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
@@ -24,20 +24,24 @@ public class API {
     @Path("/events")
     @Consumes(MediaType.APPLICATION_JSON + ";charset=utf-8")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public String acceptEvent(String jsonstring) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonObject env = gson.fromJson(jsonstring, JsonObject.class);
-
+    public String acceptEvent(String input) {
         try {
-            System.out.println(env);
-            Tutorial.test();
-//            RuleEngine engine = new RuleEngine();
-//            engine.event(env);
+            System.out.println("--- event");
+            System.out.println("    input: \n" + input);
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            JsonObject env = gson.fromJson(input, JsonObject.class);
+            System.out.println("    json: \n" + env);
+
+            RuleEngine engine = new RuleEngine();
+            engine.event(env);
+
+            return gson.toJson(env);
         } catch (Exception ex) {
             log.error("exception: ", ex);
             ex.printStackTrace();
+            return "{'error':'Internal error'}";
         }
-        return gson.toJson(env);
     }
 }
 

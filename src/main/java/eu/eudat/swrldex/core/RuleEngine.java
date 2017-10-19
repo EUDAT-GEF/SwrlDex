@@ -2,58 +2,48 @@ package eu.eudat.swrldex.core;
 
 
 import com.google.gson.JsonObject;
-import com.hp.hpl.jena.ontology.Individual;
-import com.hp.hpl.jena.ontology.ObjectProperty;
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import org.mindswap.pellet.jena.PelletReasonerFactory;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.swrlapi.factory.SWRLAPIFactory;
+import org.swrlapi.parser.SWRLParseException;
+import org.swrlapi.sqwrl.SQWRLQueryEngine;
+import org.swrlapi.sqwrl.SQWRLResult;
+import org.swrlapi.sqwrl.exceptions.SQWRLException;
 
-public class RuleEngine{
+public class RuleEngine {
 
     public void event(JsonObject env) {
-    }
+        try {
+            OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
+//            JsonLdParserFactory.register(); // Really just needed once
 
-    public void handleEvent(JsonObject env) {
-        String ont = "http://owldl.com/ontologies/dl-safe.owl";
+//            IRI vcardIri = IRI.create("http://www.w3.org/2006/vcard/ns.jsonld");
+//            OWLOntology ontology = ontologyManager.loadOntology(vcardIri);
+            OWLOntology ontology = ontologyManager.createOntology();
 
-        OntModel model = ModelFactory.createOntologyModel( PelletReasonerFactory.THE_SPEC, null );
-        model.read( ont );
+            SQWRLQueryEngine queryEngine = SWRLAPIFactory.createSQWRLQueryEngine(ontology);
+            SQWRLResult result = queryEngine.runSQWRLQuery("q1", "swrlb:add(?x, 2, 20) -> sqwrl:select(?x)");
 
-        ObjectProperty sibling = model.getObjectProperty( ont + "#sibling" );
+//            ontologyManager.saveOntology(ontology, new JsonLdOntologyFormat(), System.out);
 
-        OntClass BadChild = model.getOntClass( ont + "#BadChild" );
-        OntClass Child = model.getOntClass( ont + "#Child" );
+            // Process the SQWRL result
+            if (result.next())
+                System.out.println("x: " + result.getLiteral("x").getInteger());
 
-        Individual Abel = model.getIndividual( ont + "#Abel" );
-        Individual Cain = model.getIndividual( ont + "#Cain" );
-        Individual Remus = model.getIndividual( ont + "#Remus" );
-        Individual Romulus = model.getIndividual( ont + "#Romulus" );
-
-        model.prepare();
-
-        // Cain has sibling Abel due to SiblingRule
-        println(Cain, sibling);
-        // Abel has sibling Cain due to SiblingRule and rule works symmetric
-        println(Abel, sibling);
-        // Remus is not inferred to have a sibling because his father is not
-        // known
-        println(Remus, sibling);
-        // No siblings for Romulus for same reasons
-        println(Romulus, sibling);
-
-        // Cain is a BadChild due to BadChildRule
-        println(BadChild);
-        // Cain is a Child due to BadChildRule and ChildRule2
-        // Oedipus is a Child due to ChildRule1 and ChildRule2 combined with the
-        // unionOf type
-        println(Child);
-    }
-
-    void println(Individual i, ObjectProperty op) {
-        System.out.println(i.toString() + " " + (op != null ? op : ""));
-    }
-    void println(OntClass oc) {
-        System.out.println(oc.toString());
+        } catch (OWLOntologyCreationException e) {
+            System.err.println("Error creating OWL ontology: " + e.getMessage());
+            e.printStackTrace();
+        } catch (SWRLParseException e) {
+            System.err.println("Error parsing SWRL rule or SQWRL query: " + e.getMessage());
+            e.printStackTrace();
+        } catch (SQWRLException e) {
+            System.err.println("Error running SWRL rule or SQWRL query: " + e.getMessage());
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            System.err.println("Error in rule engine: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
