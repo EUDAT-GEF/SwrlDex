@@ -1,6 +1,7 @@
 package eu.eudat.swrldex;
 
 
+import eu.eudat.swrldex.core.RuleEngine;
 import eu.eudat.swrldex.health.AppHealthCheck;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -16,6 +17,14 @@ public class Application extends io.dropwizard.Application<Configuration> {
 
     public static void main(String[] args) throws Exception {
         new Application().run(args);
+
+
+        try {
+            new RuleEngine().event(null);
+        } catch (Exception ex) {
+            log.error("exception: ", ex);
+            ex.printStackTrace();
+        }
     }
 
     @Override
