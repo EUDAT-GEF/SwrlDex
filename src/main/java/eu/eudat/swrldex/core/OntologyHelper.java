@@ -11,6 +11,9 @@ import org.swrlapi.parser.SWRLParseException;
 import org.swrlapi.sqwrl.SQWRLQueryEngine;
 import org.swrlapi.sqwrl.SQWRLResult;
 import org.swrlapi.sqwrl.exceptions.SQWRLException;
+import uk.ac.manchester.cs.owl.owlapi.OWLLiteralImplBoolean;
+import uk.ac.manchester.cs.owl.owlapi.OWLLiteralImplDouble;
+import uk.ac.manchester.cs.owl.owlapi.OWLLiteralImplString;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
@@ -108,8 +111,24 @@ class OntologyHelper {
         add(typeAx(toClass(parent), toInd(child)));
     }
 
-    public void addProp(String prop, String parent, String child) {
+    public void addProp(String parent, String prop, String child) {
         add(propAx(toProp(prop), toInd(parent), toInd(child)));
+    }
+
+    public void addDataProp(String parent, String prop, String child) {
+        add(dataPropAx(toDataProp(prop), toInd(parent), child));
+    }
+
+    public void addDataProp(String parent, String prop, double child) {
+        add(dataPropAx(toDataProp(prop), toInd(parent), child));
+    }
+
+    public void addDataProp(String parent, String prop, boolean child) {
+        add(dataPropAx(toDataProp(prop), toInd(parent), child));
+    }
+
+    public void addNullProp(String parent, String prop) {
+        add(propAx(toProp(prop), toInd(parent), toInd("null")));
     }
 
 //    TODO: continue here
@@ -174,6 +193,11 @@ class OntologyHelper {
         return df.getOWLObjectProperty(name, pm);
     };
 
+    OWLDataProperty toDataProp(String name) {
+//        return df.getOWLObjectProperty(IRI.create(rootIRI + "#" + name));
+        return df.getOWLDataProperty(name, pm);
+    };
+
     OWLAxiom subClassAx(OWLClass parent, OWLClass child) {
         return df.getOWLSubClassOfAxiom(child, parent);
     }
@@ -184,6 +208,18 @@ class OntologyHelper {
 
     OWLAxiom propAx(OWLObjectProperty p, OWLNamedIndividual parent, OWLNamedIndividual child) {
         return df.getOWLObjectPropertyAssertionAxiom(p, parent, child);
+    }
+
+    OWLAxiom dataPropAx(OWLDataProperty p, OWLNamedIndividual parent, double d) {
+        return df.getOWLDataPropertyAssertionAxiom(p, parent, d);
+    }
+
+    OWLAxiom dataPropAx(OWLDataProperty p, OWLNamedIndividual parent, boolean b) {
+        return df.getOWLDataPropertyAssertionAxiom(p, parent, b);
+    }
+
+    OWLAxiom dataPropAx(OWLDataProperty p, OWLNamedIndividual parent, String s) {
+        return df.getOWLDataPropertyAssertionAxiom(p, parent, s);
     }
 
     SWRLRule ruleAx(Set<SWRLAtom> body, Set<SWRLAtom> head) {
