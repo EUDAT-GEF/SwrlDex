@@ -5,7 +5,10 @@
     "action": "user discovery",
     "preceding": true
   },
-  "user": null,
+  "user": {
+    "Name": "John Doe",
+    "Email": "johndoe@example.com"
+  },
   "resource": {
     "uri": "/api/user",
     "method": "GET"

@@ -2,20 +2,21 @@ package eu.eudat.swrldex.core;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.io.FileDocumentTarget;
 import org.semanticweb.owlapi.io.StringDocumentTarget;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.swrlapi.core.IRIResolver;
+import org.swrlapi.core.SWRLRuleEngine;
+import org.swrlapi.exceptions.SWRLBuiltInException;
 import org.swrlapi.factory.SWRLAPIFactory;
 import org.swrlapi.parser.SWRLParseException;
 import org.swrlapi.sqwrl.SQWRLQueryEngine;
 import org.swrlapi.sqwrl.SQWRLResult;
 import org.swrlapi.sqwrl.exceptions.SQWRLException;
-import uk.ac.manchester.cs.owl.owlapi.OWLLiteralImplBoolean;
-import uk.ac.manchester.cs.owl.owlapi.OWLLiteralImplDouble;
-import uk.ac.manchester.cs.owl.owlapi.OWLLiteralImplString;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
@@ -127,19 +128,10 @@ class OntologyHelper {
         add(dataPropAx(toDataProp(prop), toInd(parent), child));
     }
 
-    public void addNullProp(String parent, String prop) {
-        add(propAx(toProp(prop), toInd(parent), toInd("null")));
+    public void addRule(String id, String ruleText) throws SWRLBuiltInException, SWRLParseException {
+        SWRLRuleEngine ruleEngine = SWRLAPIFactory.createSWRLRuleEngine(ontology);
+        ruleEngine.createSWRLRule(id, ruleText);
     }
-
-//    TODO: continue here
-//    public void addRule() {
-//        OWLClass clsA = df.getOWLClass("A", pm);
-//        OWLClass clsB = df.getOWLClass("B", pm);
-//        SWRLVariable var = df.getSWRLVariable(IRI.create(example_iri + "#x"));
-//        SWRLClassAtom body = df.getSWRLClassAtom(clsA, var);
-//        SWRLClassAtom head = df.getSWRLClassAtom(clsB, var);
-//        add(ruleAx(Collections.singleton(body), Collections.singleton(head)));
-//    }
 
     public SQWRLResult runSQWRL(String id, String queryText) throws SQWRLException, SWRLParseException {
         IRIResolver iriResolver = resolver;
@@ -176,6 +168,11 @@ class OntologyHelper {
         System.out.println("---- " + pm.getDefaultPrefix());
         System.out.println(target.toString());
         System.out.println("----");
+    }
+
+    public void saveAsXML(Path path) throws OWLOntologyStorageException {
+        FileDocumentTarget target = new FileDocumentTarget(path.toFile());
+        ontologyManager.saveOntology(ontology, target);
     }
 
     OWLClass toClass(String name) {
