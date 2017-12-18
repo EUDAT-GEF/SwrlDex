@@ -19,7 +19,7 @@ class JsonLoader {
 
     public void load(String parent, JsonObject object) {
         for (Map.Entry<String, JsonElement> e : object.entrySet()) {
-//            System.out.println(e);
+//            System.out.println("> " + e);
             String prop = e.getKey();
             JsonElement obj = e.getValue();
             addJsonElementProp(parent, prop, obj);
@@ -44,10 +44,10 @@ class JsonLoader {
             counterMap.put(prop, idx+1);
 
             String temp = prop + "_" + idx;
-            oh.addType("Entity", temp);
+            oh.addIndividual("Entity", temp);
             oh.addProp(parent, prop, temp);
             for (Map.Entry<String, JsonElement> e: obj.getAsJsonObject().entrySet()) {
-//                System.out.println(e);
+//                System.out.println(">    " + e);
                 addJsonElementProp(temp, e.getKey(), e.getValue());
             }
         } else {

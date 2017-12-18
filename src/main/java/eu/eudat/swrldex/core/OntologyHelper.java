@@ -108,8 +108,8 @@ class OntologyHelper {
         add(subClassAx(toClass(parent), toClass(child)));
     }
 
-    public void addType(String parent, String child) {
-        add(typeAx(toClass(parent), toInd(child)));
+    public void addIndividual(String type, String individual) {
+        add(typeAx(toClass(type), toInd(individual)));
     }
 
     public void addProp(String parent, String prop, String child) {
@@ -155,6 +155,7 @@ class OntologyHelper {
         SQWRLResult result = runSQWRL(id, queryText);
         System.out.println("---- query results["+id+"]:");
         System.out.println(result.getColumnNames());
+        System.out.println("---- ");
         while (result.next()) {
             System.out.println(result.getRow());
         }
@@ -164,7 +165,6 @@ class OntologyHelper {
     public void print() throws OWLOntologyStorageException {
         StringDocumentTarget target = new StringDocumentTarget();
         ontologyManager.saveOntology(ontology, target);
-//        System.out.println("---- " + rootIRI);
         System.out.println("---- " + pm.getDefaultPrefix());
         System.out.println(target.toString());
         System.out.println("----");
@@ -176,22 +176,18 @@ class OntologyHelper {
     }
 
     OWLClass toClass(String name) {
-//        return df.getOWLClass(IRI.create(rootIRI + "#" + name));
         return df.getOWLClass(name, pm);
     };
 
     OWLNamedIndividual toInd(String name) {
-//        return df.getOWLNamedIndividual(IRI.create(rootIRI + "#" + name));
         return df.getOWLNamedIndividual(name, pm);
     };
 
     OWLObjectProperty toProp(String name) {
-//        return df.getOWLObjectProperty(IRI.create(rootIRI + "#" + name));
         return df.getOWLObjectProperty(name, pm);
     };
 
     OWLDataProperty toDataProp(String name) {
-//        return df.getOWLObjectProperty(IRI.create(rootIRI + "#" + name));
         return df.getOWLDataProperty(name, pm);
     };
 
