@@ -26,6 +26,7 @@ class OntologyHelper {
     OWLOntologyManager ontologyManager;
     OWLDataFactory df;
     OWLOntology ontology;
+    SWRLRuleEngine ruleEngine;
     IRIResolver printerIriResolver = new IRIResolver() {
         @Override
         public void reset() {
@@ -102,6 +103,7 @@ class OntologyHelper {
         ontologyManager = OWLManager.createOWLOntologyManager();
         df = OWLManager.getOWLDataFactory();
         ontology = ontologyManager.createOntology();
+        ruleEngine = SWRLAPIFactory.createSWRLRuleEngine(ontology);
     }
 
     public void addSubClass(String parent, String child) {
@@ -128,9 +130,12 @@ class OntologyHelper {
         add(dataPropAx(toDataProp(prop), toInd(parent), child));
     }
 
-    public void addRule(String id, String ruleText) throws SWRLBuiltInException, SWRLParseException {
-        SWRLRuleEngine ruleEngine = SWRLAPIFactory.createSWRLRuleEngine(ontology);
-        ruleEngine.createSWRLRule(id, ruleText);
+    public void setRule(String id, String ruleText) throws SWRLBuiltInException, SWRLParseException {
+        ruleEngine.replaceSWRLRule(id, id, ruleText, "", true);
+    }
+
+    public void deleteRule(String id){
+        ruleEngine.deleteSWRLRule(id);
     }
 
     public SQWRLResult runSQWRL(String id, String queryText) throws SQWRLException, SWRLParseException {

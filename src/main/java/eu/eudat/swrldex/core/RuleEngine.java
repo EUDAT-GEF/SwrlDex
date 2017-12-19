@@ -17,10 +17,11 @@ public class RuleEngine {
             jsonLoader.load("global", eventObject);
 //            oh.saveAsXML(Paths.get("event.xml"));
 
-            oh.addRule("r1", "user(global, ?u) ^ Name(?u, \"John Doe\") -> allow(global, true)");
+            oh.setRule("r1", "User(?u) ^ Name(?u, \"John Doe\") -> allow(global, true)");
+            oh.setRule("r1", "Name(?u, ?n) -> Name(?u, \"New Name\")");
             oh.print();
 
-            oh.printSQWRL("q1", "Entity(?entity) -> sqwrl:select(?entity)");
+            oh.printSQWRL("q1", "Name(?u, ?name) -> sqwrl:select(?u, ?name)");
             oh.printSQWRL("q2", "allow(global, ?allowed) -> sqwrl:select(?allowed)");
 
 //            SQWRLResult result = oh.runSQWRL("q10", "swrlb:add(?x, 2, 20) -> sqwrl:select(?x)");
@@ -29,7 +30,7 @@ public class RuleEngine {
 //            }
         } catch (Exception e) {
             System.err.println("Error in rule engine: " + e.getMessage());
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 }
