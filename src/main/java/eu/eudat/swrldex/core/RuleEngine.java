@@ -3,23 +3,29 @@ package eu.eudat.swrldex.core;
 
 import com.google.gson.JsonObject;
 
+import java.nio.file.Paths;
+
 public class RuleEngine {
 
-    public void event(JsonObject eventObject) {
+    public void event(JsonObject jsonEvent) {
         try {
-            OntologyHelper oh = new OntologyHelper("test", "http://www.example.com/test");
+            OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#");
             oh.addSubClass("Entity", "Environment");
             oh.addIndividual("Environment", "global");
             oh.addIndividual("Entity", "temporary_entity");
             oh.addDataProp("temporary_entity", "allow", false);
 
             JsonLoader jsonLoader = new JsonLoader(oh);
-            jsonLoader.load("global", eventObject);
-//            oh.saveAsXML(Paths.get("event.xml"));
+            jsonLoader.load("global", jsonEvent);
+            oh.saveAsXML(Paths.get("event.out.xml"));
+            oh.saveAsJsonLD(Paths.get("event.out.json"));
 
-            oh.setRule("r1", "User(?u) ^ Name(?u, \"John Doe\") -> allow(global, true)");
+//            oh.load(Paths.get("event.xml"));
+
+            oh.setRule("r1", "dex:user(global, ?u) ^ dex:Name(?u, \"John Doe\") -> dex:allow(global, true)");
             oh.setRule("r1", "Name(?u, ?n) -> Name(?u, \"New Name\")");
-            oh.print();
+//            oh.print();
+//            oh.printAsXML();
 
             oh.printSQWRL("q1", "Name(?u, ?name) -> sqwrl:select(?u, ?name)");
             oh.printSQWRL("q2", "allow(global, ?allowed) -> sqwrl:select(?allowed)");
@@ -30,7 +36,7 @@ public class RuleEngine {
 //            }
         } catch (Exception e) {
             System.err.println("Error in rule engine: " + e.getMessage());
-//            e.printStackTrace();
+            e.printStackTrace();
         }
     }
 }
