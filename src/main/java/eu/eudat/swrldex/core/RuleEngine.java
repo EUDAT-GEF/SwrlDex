@@ -3,8 +3,6 @@ package eu.eudat.swrldex.core;
 
 import com.google.gson.JsonObject;
 
-import java.nio.file.Paths;
-
 public class RuleEngine {
 
     public void event(JsonObject jsonEvent) {
@@ -17,15 +15,17 @@ public class RuleEngine {
 
             JsonLoader jsonLoader = new JsonLoader(oh);
             jsonLoader.load("global", jsonEvent);
-            oh.saveAsXML(Paths.get("event.out.xml"));
-            oh.saveAsJsonLD(Paths.get("event.out.json"));
 
-//            oh.load(Paths.get("event.xml"));
+//            oh.saveAsXML(Paths.get("event.out.xml"));
+//            oh.saveAsJsonLD(Paths.get("event.out.json"));
+//            oh.printAsXML();
+
+//            OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#", Paths.get("event.out.xml"));
 
             oh.setRule("r1", "dex:user(global, ?u) ^ dex:Name(?u, \"John Doe\") -> dex:allow(global, true)");
             oh.setRule("r1", "Name(?u, ?n) -> Name(?u, \"New Name\")");
-//            oh.print();
-//            oh.printAsXML();
+
+            oh.print();
 
             oh.printSQWRL("q1", "Name(?u, ?name) -> sqwrl:select(?u, ?name)");
             oh.printSQWRL("q2", "allow(global, ?allowed) -> sqwrl:select(?allowed)");
