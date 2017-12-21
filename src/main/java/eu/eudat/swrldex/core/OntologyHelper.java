@@ -11,6 +11,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
+import org.swrlapi.core.SWRLAPIRule;
 import org.swrlapi.core.SWRLRuleEngine;
 import org.swrlapi.exceptions.SWRLBuiltInException;
 import org.swrlapi.factory.DefaultIRIResolver;
@@ -20,7 +21,10 @@ import org.swrlapi.sqwrl.SQWRLQueryEngine;
 import org.swrlapi.sqwrl.SQWRLResult;
 import org.swrlapi.sqwrl.exceptions.SQWRLException;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -116,6 +120,21 @@ class OntologyHelper {
     public void deleteRule(String id){
         ruleEngine.deleteSWRLRule(id);
     }
+
+    public void reloadRulesFromDir(Path ruleDir) throws IOException, SWRLBuiltInException, SWRLParseException {
+        Set<String> ruleNames = new HashSet<>();
+        File[] files = ruleDir.toFile().listFiles();
+        for (File f : files) {
+            ruleNames.add(f.getName());
+            ruleEngine.replaceSWRLRule(f.getName(), f.getName(), new String(Files.readAllBytes(f.toPath())), "", true);
+        }
+        for (SWRLAPIRule r: ruleEngine.getSWRLRules()) {
+            if (!ruleNames.contains(r.getRuleName())) {
+                ruleEngine.deleteSWRLRule(r.getRuleName());
+            }
+        }
+    }
+
 
     OWLClass toClass(String name) {
         OWLClass owlClass = df.getOWLClass(name, pm);

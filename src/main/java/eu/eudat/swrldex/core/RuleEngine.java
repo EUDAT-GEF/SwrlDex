@@ -9,7 +9,6 @@ public class RuleEngine {
 
     public void event(JsonObject jsonEvent) {
         try {
-            // TODO: put rules into files
             // TODO: integrate with GEF events
             // TODO: test 2 simple rules with outcome in the ontology
             // TODO: assertive rules: return allow/disallow, environment changes
@@ -24,15 +23,13 @@ public class RuleEngine {
             jsonLoader.load("ENTITY", "global", jsonEvent);
 
             oh.saveAsXML(Paths.get("event.out.xml"));
-
 //            OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#", Paths.get("event.out.xml"));
 
             oh.print();
 
-            oh.setRule("r1", "dex:user(global, ?u) ^ dex:Name(?u, \"John Doe\") -> dex:allow(global, true)");
-            oh.setRule("r1", "Name(?u, ?n) -> Name(?u, \"New Name\")");
+            oh.reloadRulesFromDir(Paths.get("rules"));
 
-//            oh.printAsXML();
+            oh.printAsXML();
 
             oh.printSQWRL("q1", "Name(?u, ?name) -> sqwrl:select(?u, ?name)");
             oh.printSQWRL("q2", "allow(global, ?allowed) -> sqwrl:select(?allowed)");

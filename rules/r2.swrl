@@ -1,0 +1,1 @@
+dex:user(global, ?u) ^ dex:Name(?u, "John Doe") -> dex:Name(?u, "Name added by rule 2")
