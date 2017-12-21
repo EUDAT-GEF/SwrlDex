@@ -3,7 +3,7 @@ package eu.eudat.swrldex;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import eu.eudat.swrldex.core.RuleEngine;
+import eu.eudat.swrldex.core.DirectiveEngine;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
@@ -12,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 @Path("")
 public class API {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(API.class);
+    DirectiveEngine engine = new DirectiveEngine();
 
     @GET
     @Path("/info")
@@ -33,10 +34,9 @@ public class API {
             JsonObject env = gson.fromJson(input, JsonObject.class);
             System.out.println("    json: \n" + env);
 
-            RuleEngine engine = new RuleEngine();
-            engine.event(env);
+            JsonObject ret = engine.event(env);
 
-            return gson.toJson(env);
+            return gson.toJson(ret);
         } catch (Exception ex) {
             log.error("exception: ", ex);
             ex.printStackTrace();

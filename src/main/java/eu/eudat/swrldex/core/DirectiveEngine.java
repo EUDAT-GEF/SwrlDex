@@ -5,11 +5,11 @@ import com.google.gson.JsonObject;
 
 import java.nio.file.Paths;
 
-public class RuleEngine {
+public class DirectiveEngine {
 
-    public void event(JsonObject jsonEvent) {
+    public JsonObject event(JsonObject jsonEvent) {
         try {
-            // TODO: integrate with GEF events
+            // TODO: integrate with real GEF events
             // TODO: test 2 simple rules with outcome in the ontology
             // TODO: assertive rules: return allow/disallow, environment changes
             // TODO: generative rules: create new service invocations
@@ -29,19 +29,21 @@ public class RuleEngine {
 
             oh.reloadRulesFromDir(Paths.get("rules"));
 
-            oh.printAsXML();
+//            oh.printAsXML();
 
             oh.printSQWRL("q1", "Name(?u, ?name) -> sqwrl:select(?u, ?name)");
             oh.printSQWRL("q2", "allow(global, ?allowed) -> sqwrl:select(?allowed)");
-
 
 //            SQWRLResult result = oh.runSQWRL("q10", "swrlb:add(?x, 2, 20) -> sqwrl:select(?x)");
 //            if (result.next()) {
 //                System.out.println("x: " + result.getLiteral("x").getInteger());
 //            }
+
+            // TODO: here we must return a json object to the event source service
         } catch (Exception e) {
             System.err.println("Error in rule engine: " + e.getMessage());
             e.printStackTrace();
         }
+        return null;
     }
 }
