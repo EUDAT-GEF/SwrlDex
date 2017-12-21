@@ -10,45 +10,44 @@ import java.util.Map;
 
 class JsonLoader {
 
-    private static Map<String, Integer> counterMap = new HashMap<>();
     private OntologyHelper oh;
 
     JsonLoader(OntologyHelper oh) {
         this.oh = oh;
     }
 
-    public void load(String parent, JsonObject object) {
+    public void load(String parentClass, String parentInd, JsonObject object) {
         for (Map.Entry<String, JsonElement> e : object.entrySet()) {
 //            System.out.println("> " + e);
             String prop = e.getKey();
             JsonElement obj = e.getValue();
-            addJsonElementProp(parent, prop, obj);
+            addJsonElementProp(parentClass, parentInd, prop, obj);
         }
     }
 
-    private void addJsonElementProp(String parent, String prop, JsonElement obj) {
+    private void addJsonElementProp(String parentClass, String parentInd, String prop, JsonElement obj) {
         if (obj.isJsonNull()) {
             // ignore this
         } else if (obj.isJsonPrimitive()) {
-            addJsonPrimitiveProp(parent, prop, obj.getAsJsonPrimitive());
+            addJsonPrimitiveProp(parentInd, prop, obj.getAsJsonPrimitive());
         } else if (obj.isJsonArray()) {
             JsonArray arr = obj.getAsJsonArray();
             for (JsonElement x: arr) {
-                addJsonElementProp(parent, prop, x);
+                addJsonElementProp(parentClass, parentInd, prop, x);
             }
         } else if (obj.isJsonObject()) {
-            if (!counterMap.containsKey(prop)) {
-                counterMap.put(prop, 1);
+            String newClass = prop.toUpperCase();
+            if (!oh.hasClass(newClass)) {
+                oh.addSubClass(parentClass, newClass);
+                oh.addProp(parentClass, prop, newClass);
             }
-            int idx = counterMap.get(prop);
-            counterMap.put(prop, idx+1);
 
-            String temp = prop + "_" + idx;
-            oh.addIndividual("Entity", temp);
-            oh.addProp(parent, prop, temp);
+            String newInd = newIndividual(prop);
+            oh.addIndividual(newClass, newInd);
+            oh.addProp(parentInd, prop, newInd);
             for (Map.Entry<String, JsonElement> e: obj.getAsJsonObject().entrySet()) {
 //                System.out.println(">    " + e);
-                addJsonElementProp(temp, e.getKey(), e.getValue());
+                addJsonElementProp(parentClass, newInd, e.getKey(), e.getValue());
             }
         } else {
             throw new IllegalStateException("should never get here");
@@ -63,5 +62,15 @@ class JsonLoader {
         } else {
             oh.addDataProp(parent, prop, p.getAsString());
         }
+    }
+
+    private static Map<String, Integer> counterMap = new HashMap<>();
+    private String newIndividual(String prop) {
+        if (!counterMap.containsKey(prop)) {
+            counterMap.put(prop, 1);
+        }
+        int idx = counterMap.get(prop);
+        counterMap.put(prop, idx+1);
+        return prop + "_" + idx;
     }
 }

@@ -22,9 +22,7 @@ import org.swrlapi.sqwrl.exceptions.SQWRLException;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class OntologyHelper {
     OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
@@ -35,6 +33,9 @@ class OntologyHelper {
 
     SWRLRuleEngine ruleEngine;
     SQWRLQueryEngine queryEngine;
+
+    OWLReasonerFactory reasonerFactory = new StructuralReasonerFactory();
+    OWLReasoner reasoner;
 
     public OntologyHelper(String prefix, String namespace) throws OWLOntologyCreationException {
         this(prefix, namespace, null);
@@ -47,6 +48,8 @@ class OntologyHelper {
             FileDocumentSource source = new FileDocumentSource(path.toFile());
             ontology = ontologyManager.loadOntologyFromOntologyDocument(source);
         }
+
+        reasoner = reasonerFactory.createReasoner(ontology);
 
         pm.setDefaultPrefix(namespace);
         pm.setPrefix(prefix, namespace);
@@ -115,7 +118,11 @@ class OntologyHelper {
     }
 
     OWLClass toClass(String name) {
-        return df.getOWLClass(name, pm);
+        OWLClass owlClass = df.getOWLClass(name, pm);
+        if (classNameMap != null) {
+            classNameMap.add(owlClass.getIRI().getShortForm());
+        }
+        return owlClass;
     };
 
     OWLNamedIndividual toInd(String name) {
@@ -251,5 +258,23 @@ class OntologyHelper {
                 System.out.println("- " + ind.getIRI());
             }
         }
+    }
+
+    Set<String> classNameMap = null;
+    public boolean hasClass(String className) {
+        if (classNameMap == null) {
+            classNameMap = new HashSet<>();
+            Queue<OWLClass> q = new ArrayDeque<>();
+            q.addAll(reasoner.getSubClasses(df.getOWLThing(), true).getFlattened());
+            while (!q.isEmpty()) {
+                OWLClass c = q.remove();
+                String name = c.getIRI().getShortForm();
+                if (!classNameMap.contains(name)) {
+                    classNameMap.add(name);
+                    q.addAll(reasoner.getSubClasses(c, true).getFlattened());
+                }
+            }
+        }
+        return classNameMap.contains(className);
     }
 }
