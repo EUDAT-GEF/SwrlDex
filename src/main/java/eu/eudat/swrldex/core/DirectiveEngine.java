@@ -15,9 +15,15 @@ public class DirectiveEngine {
             // TODO: generative rules: create new service invocations
 
             OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#");
+//            TODO: switch to typed management of ontology entities:
+//            OClass entity = oh.cls("ENTITY");
+//            OInd global = oh.ind("global", entity);
+//            OInd output = oh.ind("output", entity);
+//            ODataProp allow = oh.dataProp("allow");
+
             oh.addIndividual("ENTITY", "global");
             oh.addIndividual("OUTPUT", "output");
-            oh.addDataProp("OUTPUT", "allow", false);
+            oh.declareDataProp("allow");
 
             JsonLoader jsonLoader = new JsonLoader(oh);
             jsonLoader.load("ENTITY", "global", jsonEvent);

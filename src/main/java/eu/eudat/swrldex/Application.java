@@ -15,7 +15,8 @@ public class Application extends io.dropwizard.Application<Configuration> {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) throws Exception {
-        new Application().run(args);
+//        new Application().run(args);
+        new AppHealthCheck().check();
     }
 
     @Override

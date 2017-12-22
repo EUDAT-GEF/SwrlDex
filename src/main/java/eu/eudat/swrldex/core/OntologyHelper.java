@@ -113,6 +113,14 @@ class OntologyHelper {
         add(dataPropAx(toDataProp(prop), toInd(parent), child));
     }
 
+    public void declareProp(String prop) {
+        add(df.getOWLDeclarationAxiom(toProp(prop)));
+    }
+
+    public void declareDataProp(String prop) {
+        add(df.getOWLDeclarationAxiom(toDataProp(prop)));
+    }
+
     public void setRule(String id, String ruleText) throws SWRLBuiltInException, SWRLParseException {
         ruleEngine.replaceSWRLRule(id, id, ruleText, "", true);
     }
@@ -134,7 +142,6 @@ class OntologyHelper {
             }
         }
     }
-
 
     OWLClass toClass(String name) {
         OWLClass owlClass = df.getOWLClass(name, pm);

@@ -14,7 +14,7 @@ public class AppHealthCheck extends HealthCheck {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AppHealthCheck.class);
 
     @Override
-    protected Result check() throws Exception {
+    public Result check() throws Exception {
         try {
             byte[] bytes = Files.readAllBytes(Paths.get("event.json"));
             String input = new String(bytes, "UTF-8");
