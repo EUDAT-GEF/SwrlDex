@@ -6,9 +6,17 @@
     "preceding": true
   },
   "user": {
-    "Name": "John Doe",
-    "Email": "johndoe@example.com"
+    "id": 1,
+    "name": "John Doe",
+    "email": "johndoe@example.com"
   },
+  "userrole": [{
+    "id": 1,
+    "name": "Administrator",
+    "description": "Administrator of community EUDAT",
+    "communityid": "1234",
+    "communityname": "EUDAT"
+  }],
   "resource": {
     "uri": "/api/user",
     "method": "GET"

@@ -1,5 +1,7 @@
 package eu.eudat.swrldex.core;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.RDFJsonLDDocumentFormat;
 import org.semanticweb.owlapi.io.FileDocumentSource;
@@ -40,6 +42,7 @@ class OntologyHelper {
 
     OWLReasonerFactory reasonerFactory = new StructuralReasonerFactory();
     OWLReasoner reasoner;
+
 
     public OntologyHelper(String prefix, String namespace) throws OWLOntologyCreationException {
         this(prefix, namespace, null);
@@ -89,37 +92,127 @@ class OntologyHelper {
         ontologyManager.saveOntology(ontology, jsonFormat, target);
     }
 
-    public void addSubClass(String parent, String child) {
-        add(subClassAx(toClass(parent), toClass(child)));
+    class OClass {
+        OWLClass c;
+
+        OClass(String name) {
+            c = df.getOWLClass(name, pm);
+            OWLAxiom ax = df.getOWLDeclarationAxiom(c);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        public void addParent(OClass parent) {
+            OWLAxiom ax = df.getOWLSubClassOfAxiom(c, parent.c);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
     }
 
-    public void addIndividual(String type, String individual) {
-        add(typeAx(toClass(type), toInd(individual)));
+    public OClass cls(String name) { return new OClass(name); }
+    public OIndividual ind(String name) { return new OIndividual(name); }
+
+    class OIndividual {
+        OWLNamedIndividual i;
+        OIndividual(String name) {
+            i = df.getOWLNamedIndividual(name, pm);
+            OWLAxiom ax = df.getOWLDeclarationAxiom(i);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        OIndividual(OWLNamedIndividual ind) {
+            i = ind;
+        }
+
+        public void addType(OClass parent) {
+            OWLAxiom ax = df.getOWLClassAssertionAxiom(parent.c, i);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        public void addProp(String prop, OIndividual obj) {
+            OWLAxiom ax = df.getOWLObjectPropertyAssertionAxiom(getProp(prop), i, obj.i);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        public void addProp(String prop, boolean v) {
+            OWLAxiom ax = df.getOWLDataPropertyAssertionAxiom(getDataProp(prop), i, v);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        public void addProp(String prop, int v) {
+            OWLAxiom ax = df.getOWLDataPropertyAssertionAxiom(getDataProp(prop), i, v);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        public void addProp(String prop, double v) {
+            OWLAxiom ax = df.getOWLDataPropertyAssertionAxiom(getDataProp(prop), i, v);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        public void addProp(String prop, String v) {
+            OWLAxiom ax = df.getOWLDataPropertyAssertionAxiom(getDataProp(prop), i, v);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
+
+        public Map<String, OIndividual> getProps() {
+            Map<String, OIndividual> ret = new HashMap<>();
+            for (OWLObjectProperty p: ontology.getObjectPropertiesInSignature()) {
+                for (OWLNamedIndividual v: reasoner.getObjectPropertyValues(i, p).getFlattened())
+                    ret.put(p.getIRI().getShortForm(), new OIndividual(v));
+            }
+            return ret;
+        }
+
+        public Map<String, JsonPrimitive> getDataProps() {
+            Map<String, JsonPrimitive> ret = new HashMap<>();
+            for (OWLDataProperty p: ontology.getDataPropertiesInSignature()) {
+                for (OWLLiteral v: reasoner.getDataPropertyValues(i, p))
+                    if (v.isBoolean()) {
+                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.parseBoolean()));
+                    } else if (v.isInteger()) {
+                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.parseInteger()));
+                    } else if (v.isDouble() || v.isFloat()) {
+                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.parseDouble()));
+                    } else {
+                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.getLiteral()));
+                    }
+            }
+            return ret;
+        }
     }
 
-    public void addProp(String parent, String prop, String child) {
-        add(propAx(toProp(prop), toInd(parent), toInd(child)));
+    private Map<String, OWLObjectProperty> propMap = new HashMap<>();
+    private OWLObjectProperty getProp(String name) {
+        if (propMap.containsKey(name)){
+            return propMap.get(name);
+        }
+        OWLObjectProperty p = df.getOWLObjectProperty(name, pm);
+        OWLAxiom ax = df.getOWLDeclarationAxiom(p);
+        ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        propMap.put(name, p);
+        return p;
     }
 
-    public void addDataProp(String parent, String prop, String child) {
-        add(dataPropAx(toDataProp(prop), toInd(parent), child));
+    private Map<String, OWLDataProperty> dataPropMap = new HashMap<>();
+    private OWLDataProperty getDataProp(String name) {
+        if (dataPropMap.containsKey(name)){
+            return dataPropMap.get(name);
+        }
+        OWLDataProperty p = df.getOWLDataProperty(name, pm);
+        OWLAxiom ax = df.getOWLDeclarationAxiom(p);
+        ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        dataPropMap.put(name, p);
+        return p;
     }
 
-    public void addDataProp(String parent, String prop, double child) {
-        add(dataPropAx(toDataProp(prop), toInd(parent), child));
+    class ODataProp {
+        OWLDataProperty p;
+        ODataProp(String name) {
+            p = df.getOWLDataProperty(name, pm);
+            OWLAxiom ax = df.getOWLDeclarationAxiom(p);
+            ontologyManager.applyChange(new AddAxiom(ontology, ax));
+        }
     }
 
-    public void addDataProp(String parent, String prop, boolean child) {
-        add(dataPropAx(toDataProp(prop), toInd(parent), child));
-    }
-
-    public void declareProp(String prop) {
-        add(df.getOWLDeclarationAxiom(toProp(prop)));
-    }
-
-    public void declareDataProp(String prop) {
-        add(df.getOWLDeclarationAxiom(toDataProp(prop)));
-    }
+    public ODataProp dataProp(String name) { return new ODataProp(name); }
 
     public void setRule(String id, String ruleText) throws SWRLBuiltInException, SWRLParseException {
         ruleEngine.replaceSWRLRule(id, id, ruleText, "", true);
@@ -129,71 +222,27 @@ class OntologyHelper {
         ruleEngine.deleteSWRLRule(id);
     }
 
-    public void reloadRulesFromDir(Path ruleDir) throws IOException, SWRLBuiltInException, SWRLParseException {
+    public void execRulesFromDir(Path ruleDir) throws IOException, SWRLBuiltInException, SWRLParseException {
         Set<String> ruleNames = new HashSet<>();
         File[] files = ruleDir.toFile().listFiles();
         for (File f : files) {
-            ruleNames.add(f.getName());
-            ruleEngine.replaceSWRLRule(f.getName(), f.getName(), new String(Files.readAllBytes(f.toPath())), "", true);
+            String name = f.getName();
+            ruleNames.add(name);
+            try {
+                ruleEngine.replaceSWRLRule(name, name,
+                        new String(Files.readAllBytes(f.toPath())), "", true);
+            } catch (SWRLParseException xc) {
+                System.err.println("Error in rule: " + name + ":\n\t" + xc.getMessage());
+                throw xc;
+            }
         }
         for (SWRLAPIRule r: ruleEngine.getSWRLRules()) {
             if (!ruleNames.contains(r.getRuleName())) {
                 ruleEngine.deleteSWRLRule(r.getRuleName());
             }
         }
-    }
 
-    OWLClass toClass(String name) {
-        OWLClass owlClass = df.getOWLClass(name, pm);
-        if (classNameMap != null) {
-            classNameMap.add(owlClass.getIRI().getShortForm());
-        }
-        return owlClass;
-    };
-
-    OWLNamedIndividual toInd(String name) {
-        return df.getOWLNamedIndividual(name, pm);
-    };
-
-    OWLObjectProperty toProp(String name) {
-        return df.getOWLObjectProperty(name, pm);
-    };
-
-    OWLDataProperty toDataProp(String name) {
-        return df.getOWLDataProperty(name, pm);
-    };
-
-    OWLAxiom subClassAx(OWLClass parent, OWLClass child) {
-        return df.getOWLSubClassOfAxiom(child, parent);
-    }
-
-    OWLAxiom typeAx(OWLClass class_, OWLNamedIndividual individual) {
-        return df.getOWLClassAssertionAxiom(class_, individual);
-    }
-
-    OWLAxiom propAx(OWLObjectProperty p, OWLNamedIndividual parent, OWLNamedIndividual child) {
-        return df.getOWLObjectPropertyAssertionAxiom(p, parent, child);
-    }
-
-    OWLAxiom dataPropAx(OWLDataProperty p, OWLNamedIndividual parent, double d) {
-        return df.getOWLDataPropertyAssertionAxiom(p, parent, d);
-    }
-
-    OWLAxiom dataPropAx(OWLDataProperty p, OWLNamedIndividual parent, boolean b) {
-        return df.getOWLDataPropertyAssertionAxiom(p, parent, b);
-    }
-
-    OWLAxiom dataPropAx(OWLDataProperty p, OWLNamedIndividual parent, String s) {
-        return df.getOWLDataPropertyAssertionAxiom(p, parent, s);
-    }
-
-    SWRLRule ruleAx(Set<SWRLAtom> body, Set<SWRLAtom> head) {
-        return df.getSWRLRule(body, head);
-    }
-
-    void add(OWLAxiom axiom) {
-        AddAxiom addAxiom = new AddAxiom(ontology, axiom);
-        ontologyManager.applyChange(addAxiom);
+        ruleEngine.infer();
     }
 
     public SQWRLResult runSQWRL(String id, String queryText) throws SQWRLException, SWRLParseException {
@@ -243,8 +292,6 @@ class OntologyHelper {
 
     public void print() {
         System.out.println("---- ontology structure:");
-        OWLReasonerFactory reasonerFactory = new StructuralReasonerFactory();
-        OWLReasoner reasoner = reasonerFactory.createReasoner(ontology);
         try {
             printHierarchy(reasoner, df.getOWLThing(), 0, new HashSet<OWLClass>());
         } catch (OWLException e) {
@@ -284,23 +331,5 @@ class OntologyHelper {
                 System.out.println("- " + ind.getIRI());
             }
         }
-    }
-
-    Set<String> classNameMap = null;
-    public boolean hasClass(String className) {
-        if (classNameMap == null) {
-            classNameMap = new HashSet<>();
-            Queue<OWLClass> q = new ArrayDeque<>();
-            q.addAll(reasoner.getSubClasses(df.getOWLThing(), true).getFlattened());
-            while (!q.isEmpty()) {
-                OWLClass c = q.remove();
-                String name = c.getIRI().getShortForm();
-                if (!classNameMap.contains(name)) {
-                    classNameMap.add(name);
-                    q.addAll(reasoner.getSubClasses(c, true).getFlattened());
-                }
-            }
-        }
-        return classNameMap.contains(className);
     }
 }

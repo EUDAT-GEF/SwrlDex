@@ -16,61 +16,62 @@ class JsonLoader {
         this.oh = oh;
     }
 
-    public void load(String parentClass, String parentInd, JsonObject object) {
+    public void load(OntologyHelper.OIndividual parent, JsonObject object, OntologyHelper.OIndividual parentOut) {
         for (Map.Entry<String, JsonElement> e : object.entrySet()) {
 //            System.out.println("> " + e);
             String prop = e.getKey();
             JsonElement obj = e.getValue();
-            addJsonElementProp(parentClass, parentInd, prop, obj);
+            addJsonElementProp(parent, prop, obj, parentOut);
         }
     }
 
-    private void addJsonElementProp(String parentClass, String parentInd, String prop, JsonElement obj) {
+    private void addJsonElementProp(OntologyHelper.OIndividual parent, String prop, JsonElement obj,
+                                    OntologyHelper.OIndividual parentOut) {
         if (obj.isJsonNull()) {
             // ignore this
         } else if (obj.isJsonPrimitive()) {
-            addJsonPrimitiveProp(parentInd, prop, obj.getAsJsonPrimitive());
+            addJsonPrimitiveProp(parent, prop, obj.getAsJsonPrimitive());
         } else if (obj.isJsonArray()) {
             JsonArray arr = obj.getAsJsonArray();
             for (JsonElement x: arr) {
-                addJsonElementProp(parentClass, parentInd, prop, x);
+                addJsonElementProp(parent, prop, x, parentOut);
             }
         } else if (obj.isJsonObject()) {
-            String newClass = prop.toUpperCase();
-            if (!oh.hasClass(newClass)) {
-                oh.addSubClass(parentClass, newClass);
-                oh.addProp(parentClass, prop, newClass);
-            }
+            OntologyHelper.OClass cls = oh.cls(prop.toUpperCase());
+            OntologyHelper.OIndividual ind = oh.ind(newIndividual(prop));
+            OntologyHelper.OIndividual indOut = oh.ind(newIndividual(prop));
 
-            String newInd = newIndividual(prop);
-            oh.addIndividual(newClass, newInd);
-            oh.addProp(parentInd, prop, newInd);
+            ind.addType(cls);
+            parent.addProp(prop, ind);
+            parentOut.addProp(prop, indOut);
+
             for (Map.Entry<String, JsonElement> e: obj.getAsJsonObject().entrySet()) {
 //                System.out.println(">    " + e);
-                addJsonElementProp(parentClass, newInd, e.getKey(), e.getValue());
+                addJsonElementProp(ind, e.getKey(), e.getValue(), indOut);
             }
         } else {
             throw new IllegalStateException("should never get here");
         }
     }
 
-    private void addJsonPrimitiveProp(String parent, String prop, JsonPrimitive p) {
+    private void addJsonPrimitiveProp(OntologyHelper.OIndividual parent, String prop, JsonPrimitive p) {
         if (p.isNumber()) {
-            oh.addDataProp(parent, prop, p.getAsNumber().doubleValue());
+            parent.addProp(prop, p.getAsNumber().doubleValue());
         } else if (p.isBoolean()) {
-            oh.addDataProp(parent, prop, p.getAsBoolean());
+            parent.addProp(prop, p.getAsBoolean());
         } else {
-            oh.addDataProp(parent, prop, p.getAsString());
+            parent.addProp(prop, p.getAsString());
         }
     }
 
-    private static Map<String, Integer> counterMap = new HashMap<>();
+    private Map<String, Integer> counterMap = new HashMap<>();
     private String newIndividual(String prop) {
         if (!counterMap.containsKey(prop)) {
             counterMap.put(prop, 1);
         }
         int idx = counterMap.get(prop);
         counterMap.put(prop, idx+1);
-        return prop + "_" + idx;
+
+        return idx == 1 ? prop : (prop + "_" + idx);
     }
 }

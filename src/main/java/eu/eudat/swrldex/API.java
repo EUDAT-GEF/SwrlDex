@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
-@Path("")
+@Path("/api")
 public class API {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(API.class);
     DirectiveEngine engine = new DirectiveEngine();
@@ -28,13 +28,13 @@ public class API {
     public String acceptEvent(String input) {
         try {
             System.out.println("--- event");
-            System.out.println("    input: \n" + input);
 
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             JsonObject env = gson.fromJson(input, JsonObject.class);
-            System.out.println("    json: \n" + env);
+            System.out.println("    input json: \n" + gson.toJson(env));
 
             JsonObject ret = engine.event(env);
+            System.out.println("    output json: \n" + gson.toJson(ret));
 
             return gson.toJson(ret);
         } catch (Exception ex) {
