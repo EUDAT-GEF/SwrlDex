@@ -1,4 +1,5 @@
-dex:userrole(input, ?ur) ^
+dex:user(input, ?u) ^
+dex:role(?u, ?ur) ^
 dex:communityname(?ur, ?commname) ^
 swrlb:stringEqualIgnoreCase(?commname, "eudat") ^
 dex:environment(output, ?outenvironment) ^
@@ -6,5 +7,4 @@ dex:limits(?outenvironment, ?outlimits)
 
 ->
 
-dex:allow(output, false) ^
-dex:memory(?outlimits, 800)
+dex:allow(output, true)

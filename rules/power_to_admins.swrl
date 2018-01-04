@@ -1,4 +1,5 @@
-dex:userrole(input, ?ur) ^
+dex:user(input, ?u) ^
+dex:role(?u, ?ur) ^
 dex:name(?ur, ?rolename) ^
 swrlb:endsWith(?rolename, "Administrator") ^
 dex:environment(output, ?outenvironment) ^

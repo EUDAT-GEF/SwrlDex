@@ -13,19 +13,28 @@ import java.nio.file.Paths;
 public class AppHealthCheck extends HealthCheck {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AppHealthCheck.class);
 
+    private Gson gson = new GsonBuilder().create();
+
+    private DirectiveEngine engine;
+
+    public AppHealthCheck(DirectiveEngine engine) {
+        this.engine = engine;
+    }
+
+
     @Override
-    public Result check() throws Exception {
+    public Result check() {
         try {
-            byte[] bytes = Files.readAllBytes(Paths.get("event.json"));
+            byte[] bytes = Files.readAllBytes(Paths.get("test_event.json"));
             String input = new String(bytes, "UTF-8");
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            JsonObject env = gson.fromJson(input, JsonObject.class);
-            new DirectiveEngine().event(env);
+            JsonObject in = gson.fromJson(input, JsonObject.class);
+            JsonObject out = engine.event(in);
+
+            return Result.healthy("Generated output: \n" + gson.toJson(out));
         } catch (Exception ex) {
             log.error("exception while healthchecking: ", ex);
             ex.printStackTrace();
             return Result.unhealthy(ex.getMessage());
         }
-        return Result.healthy();
     }
 }

@@ -1,6 +1,5 @@
 package eu.eudat.swrldex.core;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.RDFJsonLDDocumentFormat;
@@ -13,6 +12,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
+import org.slf4j.LoggerFactory;
 import org.swrlapi.core.SWRLAPIRule;
 import org.swrlapi.core.SWRLRuleEngine;
 import org.swrlapi.exceptions.SWRLBuiltInException;
@@ -31,6 +31,8 @@ import java.nio.file.Path;
 import java.util.*;
 
 class OntologyHelper {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(OntologyHelper.class);
+
     OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
     OWLDataFactory df = OWLManager.getOWLDataFactory();
     PrefixManager pm = new DefaultPrefixManager();
@@ -152,28 +154,38 @@ class OntologyHelper {
             ontologyManager.applyChange(new AddAxiom(ontology, ax));
         }
 
-        public Map<String, OIndividual> getProps() {
-            Map<String, OIndividual> ret = new HashMap<>();
+        public Map<String, List<OIndividual>> getProps() {
+            Map<String, List<OIndividual>> ret = new HashMap<>();
             for (OWLObjectProperty p: ontology.getObjectPropertiesInSignature()) {
-                for (OWLNamedIndividual v: reasoner.getObjectPropertyValues(i, p).getFlattened())
-                    ret.put(p.getIRI().getShortForm(), new OIndividual(v));
+                for (OWLNamedIndividual v: reasoner.getObjectPropertyValues(i, p).getFlattened()) {
+                    String k = p.getIRI().getShortForm();
+                    if (!ret.containsKey(k)) {
+                        ret.put(k, new ArrayList<>());
+                    }
+                    ret.get(k).add(new OIndividual(v));
+                }
             }
             return ret;
         }
 
-        public Map<String, JsonPrimitive> getDataProps() {
-            Map<String, JsonPrimitive> ret = new HashMap<>();
+        public Map<String, List<JsonPrimitive>> getDataProps() {
+            Map<String, List<JsonPrimitive>> ret = new HashMap<>();
             for (OWLDataProperty p: ontology.getDataPropertiesInSignature()) {
-                for (OWLLiteral v: reasoner.getDataPropertyValues(i, p))
-                    if (v.isBoolean()) {
-                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.parseBoolean()));
-                    } else if (v.isInteger()) {
-                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.parseInteger()));
-                    } else if (v.isDouble() || v.isFloat()) {
-                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.parseDouble()));
-                    } else {
-                        ret.put(p.getIRI().getShortForm(), new JsonPrimitive(v.getLiteral()));
+                for (OWLLiteral v: reasoner.getDataPropertyValues(i, p)) {
+                    String k = p.getIRI().getShortForm();
+                    if (!ret.containsKey(k)) {
+                        ret.put(k, new ArrayList<>());
                     }
+                    if (v.isBoolean()) {
+                        ret.get(k).add(new JsonPrimitive(v.parseBoolean()));
+                    } else if (v.isInteger()) {
+                        ret.get(k).add(new JsonPrimitive(v.parseInteger()));
+                    } else if (v.isDouble() || v.isFloat()) {
+                        ret.get(k).add(new JsonPrimitive(v.parseDouble()));
+                    } else {
+                        ret.get(k).add(new JsonPrimitive(v.getLiteral()));
+                    }
+                }
             }
             return ret;
         }
@@ -232,8 +244,10 @@ class OntologyHelper {
                 ruleEngine.replaceSWRLRule(name, name,
                         new String(Files.readAllBytes(f.toPath())), "", true);
             } catch (SWRLParseException xc) {
-                System.err.println("Error in rule: " + name + ":\n\t" + xc.getMessage());
-                throw xc;
+                String msg = "Error in rule: " + name + ":\n\t" + xc.getMessage();
+                log.error(msg);
+                // TODO: the error here should be rethrown, not ignored as we do now (for debugging purposes)
+                // throw new SWRLParseException(msg);
             }
         }
         for (SWRLAPIRule r: ruleEngine.getSWRLRules()) {

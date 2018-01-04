@@ -8,11 +8,19 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("/api")
 public class API {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(API.class);
-    DirectiveEngine engine = new DirectiveEngine();
+
+    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private DirectiveEngine engine;
+
+    public API(DirectiveEngine engine) {
+        this.engine = engine;
+    }
 
     @GET
     @Path("/info")
@@ -25,23 +33,15 @@ public class API {
     @Path("/events")
     @Consumes(MediaType.APPLICATION_JSON + ";charset=utf-8")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public String acceptEvent(String input) {
+    public Response acceptEvent(String input) {
         try {
-            System.out.println("--- event");
-
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
             JsonObject env = gson.fromJson(input, JsonObject.class);
-            System.out.println("    input json: \n" + gson.toJson(env));
-
             JsonObject ret = engine.event(env);
-            System.out.println("    output json: \n" + gson.toJson(ret));
-
-            return gson.toJson(ret);
+            String retstr = gson.toJson(ret);
+            return Response.ok(retstr).build();
         } catch (Exception ex) {
             log.error("exception: ", ex);
-            ex.printStackTrace();
-            return "{'error':'Internal error'}";
+            return Response.serverError().build();
         }
     }
 }
-
