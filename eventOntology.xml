@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://eudat.eu/ns/dex#"
+     xml:base="http://eudat.eu/ns/dex"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:dex="http://eudat.eu/ns/dex#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+    <owl:Ontology/>
+
+    <!-- Classes -->
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#ENTITY"/>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#ENVIRONMENT">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#EVENT">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#LIMITS">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#RESOURCE">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#STATISTICS">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#TIMEOUTS">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#USER">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#USERROLE">
+        <rdfs:subClassOf rdf:resource="http://eudat.eu/ns/dex#ENTITY"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#INPUT"/>
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#OUTPUT"/>
+
+    <!-- Object Properties -->
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#environment"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#event"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#limits"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#resource"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#statistics"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#timeouts"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#user"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#role"/>
+
+    <!-- Data properties -->
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#CPUPeriod"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#CPUQuota"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#CPUShares"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#action"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#allow"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#checkInterval"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#dataStaging"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#fileDownload"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#id"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#jobExecution"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#memory"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#memorySwap"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#method"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#preceding"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#preparation"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#time"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#totalRunningJobs"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#uri"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#userRunningJobs"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#volumeInspection"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#name"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#communityname"/>
+
+
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#allow"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#allow_test"/>
+
+</rdf:RDF>

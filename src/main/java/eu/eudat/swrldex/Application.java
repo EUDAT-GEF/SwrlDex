@@ -1,7 +1,7 @@
 package eu.eudat.swrldex;
 
 
-import eu.eudat.swrldex.core.RuleEngine;
+import eu.eudat.swrldex.core.DirectiveEngine;
 import eu.eudat.swrldex.health.AppHealthCheck;
 import io.dropwizard.Configuration;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -16,21 +16,14 @@ public class Application extends io.dropwizard.Application<Configuration> {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) throws Exception {
-        new Application().run(args);
-
-
-        try {
-            new RuleEngine().event(null);
-        } catch (Exception ex) {
-            log.error("exception: ", ex);
-            ex.printStackTrace();
-        }
+       new Application().run(args);
     }
 
     @Override
     public void run(Configuration config, Environment env) {
-        env.jersey().register(new API());
-        env.healthChecks().register("SwrlDex", new AppHealthCheck());
+        DirectiveEngine engine = new DirectiveEngine();
+        env.jersey().register(new API(engine));
+        env.healthChecks().register("SwrlDex", new AppHealthCheck(engine));
         log.info("SwrlDex start");
     }
 

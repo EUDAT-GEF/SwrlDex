@@ -1,0 +1,11 @@
+dex:user(input, ?u) ^
+dex:role(?u, ?ur) ^
+dex:name(?ur, ?rolename) ^
+swrlb:endsWith(?rolename, "Administrator") ^
+dex:environment(output, ?outenvironment) ^
+dex:limits(?outenvironment, ?outlimits)
+
+->
+
+dex:allow(output, true) ^
+dex:memory(?outlimits, 800048000)

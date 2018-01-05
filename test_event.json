@@ -1,0 +1,45 @@
+{
+  "event": {
+    "id": 1,
+    "time": "2017-12-16T15:29:21+01:00",
+    "action": "user discovery",
+    "preceding": true
+  },
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "johndoe@example.com",
+    "role": [{
+      "id": 1,
+      "name": "Administrator",
+      "description": "Administrator of community EUDAT",
+      "communityid": "1234",
+      "communityname": "EUDAT"
+    }]
+  },
+  "resource": {
+    "uri": "/api/user",
+    "method": "GET"
+  },
+  "environment": {
+    "timeouts": {
+      "dataStaging": 1000,
+      "volumeInspection": 1000,
+      "fileDownload": 1000,
+      "preparation": 100,
+      "jobExecution": 7200,
+      "checkInterval": 10
+    },
+    "limits": {
+      "CPUShares": 1024,
+      "CPUPeriod": 100000,
+      "CPUQuota": 50000,
+      "memory": 400024000,
+      "memorySwap": 450024000
+    }
+  },
+  "statistics": {
+    "userRunningJobs": 0,
+    "totalRunningJobs": 0
+  }
+}
