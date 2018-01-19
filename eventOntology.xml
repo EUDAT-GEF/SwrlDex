@@ -45,7 +45,8 @@
     </owl:Class>
 
     <owl:Class rdf:about="http://eudat.eu/ns/dex#INPUT"/>
-    <owl:Class rdf:about="http://eudat.eu/ns/dex#OUTPUT"/>
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#ACCEPT"/>
+    <owl:Class rdf:about="http://eudat.eu/ns/dex#GENERATE"/>
 
     <!-- Object Properties -->
     <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#environment"/>
@@ -56,6 +57,9 @@
     <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#timeouts"/>
     <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#user"/>
     <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#role"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#callurl"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#querydata"/>
+    <owl:ObjectProperty rdf:about="http://eudat.eu/ns/dex#bodydata"/>
 
     <!-- Data properties -->
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#CPUPeriod"/>
@@ -80,6 +84,8 @@
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#volumeInspection"/>
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#name"/>
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#communityname"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#method"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#uri"/>
 
 
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#allow"/>

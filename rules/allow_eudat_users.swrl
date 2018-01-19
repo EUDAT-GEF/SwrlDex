@@ -5,4 +5,4 @@ swrlb:stringEqualIgnoreCase(?commname, "eudat")
 
 ->
 
-dex:allow(output, true)
+dex:allow(accept, true)

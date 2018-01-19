@@ -2,10 +2,10 @@ dex:user(input, ?u) ^
 dex:role(?u, ?ur) ^
 dex:name(?ur, ?rolename) ^
 swrlb:endsWith(?rolename, "Administrator") ^
-dex:environment(output, ?outenvironment) ^
+dex:environment(accept, ?outenvironment) ^
 dex:limits(?outenvironment, ?outlimits)
 
 ->
 
-dex:allow(output, true) ^
+dex:allow(accept, true) ^
 dex:memory(?outlimits, 800048000)

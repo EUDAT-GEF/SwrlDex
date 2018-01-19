@@ -17,14 +17,75 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class DirectiveEngine {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(DirectiveEngine.class);
 
-    public static int ONTOLOGY_POOL_SIZE = 10;
-
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+    public DirectiveEngine() {
+        startOntologyPoolThread();
+    }
+
+    public JsonObject event(JsonObject jsonEvent) {
+        try {
+            OntologyHelper oh = newOntologyHelper();
+            OntologyHelper.OClass inputCls = oh.cls("INPUT");
+            OntologyHelper.OClass acceptCls = oh.cls("ACCEPT");
+            OntologyHelper.OClass generateCls = oh.cls("GENERATE");
+
+            // root individual for all incoming data
+            OntologyHelper.OIndividual input = oh.ind("input");
+            input.addType(inputCls);
+
+            // root individual for all accept assertions
+            OntologyHelper.OIndividual accept = oh.ind("accept");
+            accept.addType(acceptCls);
+
+            // root individual for all generated calls
+            OntologyHelper.OIndividual generate = oh.ind("generate");
+            generate.addType(generateCls);
+
+            new JsonLoader(oh).load(input, jsonEvent, accept);
+
+            // oh.print();
+            // oh.printAsXML();
+            // oh.saveAsXML(Paths.get("event.out.xml"));
+
+            log.info("--- dumped input:");
+            log.info(gson.toJson(new JsonDumper(oh).dump(input)));
+            log.info("");
+
+            oh.execRulesFromDir(Paths.get("rules"));
+
+            log.info("--- dumped accept:");
+            log.info(gson.toJson(new JsonDumper(oh).dump(accept)));
+            log.info("");
+
+            JsonObject jsonEventOutput = new JsonDumper(oh).dump(accept);
+            return jsonEventOutput;
+        } catch (OWLOntologyCreationException e) {
+            log.error("Ontology creation error: ", e);
+        } catch (org.swrlapi.parser.SWRLParseException e) {
+            log.error("Parse error: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error: ", e);
+        }
+        return null;
+    }
+
+    public static int ONTOLOGY_POOL_SIZE = 10;
     private Queue<OntologyHelper> pool = new ConcurrentLinkedQueue();
     private Object poolMon = new Object();
 
-    public DirectiveEngine() {
+    private OntologyHelper newOntologyHelper() throws OWLOntologyCreationException {
+        if (!pool.isEmpty()) {
+            OntologyHelper oh = pool.poll();
+            synchronized (poolMon) { poolMon.notify(); }
+            return oh;
+        } else {
+            return new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
+                    Paths.get("eventOntology.xml"));
+        }
+    }
+
+    private void startOntologyPoolThread() {
         new Thread(() -> {
             while (true) {
                 try {
@@ -43,58 +104,5 @@ public class DirectiveEngine {
                 }
             }
         }).start();
-    }
-
-    private OntologyHelper newOntologyHelper() throws OWLOntologyCreationException {
-        if (!pool.isEmpty()) {
-            OntologyHelper oh = pool.poll();
-            synchronized (poolMon) { poolMon.notify(); }
-            return oh;
-        } else {
-            return new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
-                    Paths.get("eventOntology.xml"));
-        }
-    }
-
-    public JsonObject event(JsonObject jsonEvent) {
-        try {
-            OntologyHelper oh = newOntologyHelper();
-            OntologyHelper.OClass inputCls = oh.cls("INPUT");
-            OntologyHelper.OClass outputCls = oh.cls("OUTPUT");
-
-            // root individual for all incoming data
-            OntologyHelper.OIndividual input = oh.ind("input");
-            input.addType(inputCls);
-
-            // root individual for all outgoing data
-            OntologyHelper.OIndividual output = oh.ind("output");
-            output.addType(outputCls);
-
-            new JsonLoader(oh).load(input, jsonEvent, output);
-
-            // oh.print();
-            // oh.printAsXML();
-            // oh.saveAsXML(Paths.get("event.out.xml"));
-
-            // System.out.println("--- dumped input:");
-            // System.out.println(gson.toJson(new JsonDumper(oh).dump(input)));
-            // System.out.println("");
-
-            oh.execRulesFromDir(Paths.get("rules"));
-
-            // System.out.println("--- dumped output:");
-            // System.out.println(gson.toJson(new JsonDumper(oh).dump(output)));
-            // System.out.println("");
-
-            JsonObject jsonEventOutput = new JsonDumper(oh).dump(output);
-            return jsonEventOutput;
-        } catch (OWLOntologyCreationException e) {
-            log.error("Ontology creation error: ", e);
-        } catch (org.swrlapi.parser.SWRLParseException e) {
-            log.error("Parse error: " + e.getMessage());
-        } catch (Exception e) {
-            log.error("Error: ", e);
-        }
-        return null;
     }
 }
