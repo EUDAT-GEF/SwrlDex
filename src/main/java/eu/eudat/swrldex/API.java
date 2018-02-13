@@ -41,7 +41,12 @@ public class API {
             if (isPrecedingEvent(env)) {
                 ret = engine.event(env);
             } else {
-                executorService.submit(() -> engine.event(env));
+                executorService.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        engine.event(env);
+                    }
+                });
                 ret = new JsonObject();
             }
             String retstr = gson.toJson(ret);

@@ -24,6 +24,8 @@ public class DirectiveEngine {
     }
 
     public JsonObject event(JsonObject jsonEvent) {
+        log.info("--- original json input:");
+        log.info(gson.toJson(jsonEvent));
         try {
             OntologyHelper oh = newOntologyHelper();
             OntologyHelper.OClass inputCls = oh.cls("INPUT");
@@ -86,21 +88,26 @@ public class DirectiveEngine {
     }
 
     private void startOntologyPoolThread() {
-        new Thread(() -> {
-            while (true) {
-                try {
-                    if (pool.size() >= ONTOLOGY_POOL_SIZE) {
-                        synchronized (poolMon) { poolMon.wait(); }
-                    } else {
-                        OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
-                                Paths.get("eventOntology.xml"));
-                        pool.add(oh);
-                        log.info("pool: new ontology added, now " + pool.size());
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        if (pool.size() >= ONTOLOGY_POOL_SIZE) {
+                            synchronized (poolMon) {
+                                poolMon.wait();
+                            }
+                        } else {
+                            OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
+                                    Paths.get("eventOntology.xml"));
+                            pool.add(oh);
+                            log.info("pool: new ontology added, now " + pool.size());
+                        }
+                    } catch (OWLOntologyCreationException e) {
+                        log.error("pool: ontology creation error", e);
+                    } catch (InterruptedException e) {
+                        // ignore it
                     }
-                } catch (OWLOntologyCreationException e) {
-                    log.error("pool: ontology creation error", e);
-                } catch (InterruptedException e) {
-                    // ignore it
                 }
             }
         }).start();
