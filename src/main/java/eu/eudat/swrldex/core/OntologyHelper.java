@@ -51,7 +51,7 @@ class OntologyHelper {
     }
 
     public OntologyHelper(String prefix, String namespace, Path path) throws OWLOntologyCreationException {
-            if (path == null) {
+        if (path == null) {
             ontology = ontologyManager.createOntology();
         } else {
             FileDocumentSource source = new FileDocumentSource(path.toFile());
