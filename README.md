@@ -1,2 +1,2 @@
 # SwrlDex
-A test directive engine using a semantic reasoner
+The directive engine, based on the SWRLAPI library.
