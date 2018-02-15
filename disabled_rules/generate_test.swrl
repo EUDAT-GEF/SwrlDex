@@ -1,0 +1,10 @@
+dex:resource(input, ?r) ^
+dex:uri(?r, ?u) ^
+dex:method(?r, ?m) ^
+swrlb:endsWith(?u, "/api/builds") ^
+swrlb:stringEqualIgnoreCase(?m, "POST") ^
+
+->
+
+dex:script(generate, "test_script.sh") ^
+dex:parameter(generate, "firstparameter")

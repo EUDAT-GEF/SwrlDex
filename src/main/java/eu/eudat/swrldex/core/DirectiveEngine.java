@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-// TODO: generative rules: create new service invocations
 // TODO: performance: reuse ontology: recursively remove input+output individuals after event
 
 public class DirectiveEngine {
@@ -24,8 +23,8 @@ public class DirectiveEngine {
     }
 
     public JsonObject event(JsonObject jsonEvent) {
-        log.info("--- original json input:");
-        log.info(gson.toJson(jsonEvent));
+        log.debug("--- original json input:");
+        log.debug(gson.toJson(jsonEvent));
         try {
             OntologyHelper oh = newOntologyHelper();
             OntologyHelper.OClass inputCls = oh.cls("INPUT");
@@ -50,15 +49,19 @@ public class DirectiveEngine {
             // oh.printAsXML();
             // oh.saveAsXML(Paths.get("event.out.xml"));
 
-            log.info("--- dumped input:");
-            log.info(gson.toJson(new JsonDumper(oh).dump(input)));
-            log.info("");
+            // log.debug("--- dumped input:");
+            // log.debug(gson.toJson(new JsonDumper(oh).dump(input)));
+            // log.debug("");
 
             oh.execRulesFromDir(Paths.get("rules"));
 
-            log.info("--- dumped accept:");
-            log.info(gson.toJson(new JsonDumper(oh).dump(accept)));
-            log.info("");
+            log.debug("--- dumped accept and generate:");
+            log.debug(gson.toJson(new JsonDumper(oh).dump(accept)));
+            log.debug(gson.toJson(new JsonDumper(oh).dump(generate)));
+            log.debug("");
+
+            JsonObject jsonEventGenerate = new JsonDumper(oh).dump(generate);
+            Generator.fromJson(jsonEventGenerate).handle();
 
             JsonObject jsonEventOutput = new JsonDumper(oh).dump(accept);
             return jsonEventOutput;
@@ -77,8 +80,8 @@ public class DirectiveEngine {
     private Object poolMon = new Object();
 
     private OntologyHelper newOntologyHelper() throws OWLOntologyCreationException {
-        if (!pool.isEmpty()) {
-            OntologyHelper oh = pool.poll();
+        OntologyHelper oh = pool.poll();
+        if (oh != null) {
             synchronized (poolMon) { poolMon.notify(); }
             return oh;
         } else {
@@ -101,7 +104,7 @@ public class DirectiveEngine {
                             OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
                                     Paths.get("eventOntology.xml"));
                             pool.add(oh);
-                            log.info("pool: new ontology added, now " + pool.size());
+                            log.debug("pool: new ontology added, now " + pool.size());
                         }
                     } catch (OWLOntologyCreationException e) {
                         log.error("pool: ontology creation error", e);

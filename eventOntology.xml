@@ -86,9 +86,12 @@
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#communityname"/>
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#method"/>
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#uri"/>
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#parameter"/>
 
 
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#allow"/>
     <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#allow_test"/>
+
+    <owl:DatatypeProperty rdf:about="http://eudat.eu/ns/dex#script"/>
 
 </rdf:RDF>
