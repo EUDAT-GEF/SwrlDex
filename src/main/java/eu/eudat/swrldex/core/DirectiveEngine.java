@@ -11,82 +11,59 @@ import java.nio.file.Paths;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-// TODO: generative rules: create new service invocations
 // TODO: performance: reuse ontology: recursively remove input+output individuals after event
 
 public class DirectiveEngine {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(DirectiveEngine.class);
 
-    public static int ONTOLOGY_POOL_SIZE = 10;
-
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    private Queue<OntologyHelper> pool = new ConcurrentLinkedQueue();
-    private Object poolMon = new Object();
-
     public DirectiveEngine() {
-        new Thread(() -> {
-            while (true) {
-                try {
-                    if (pool.size() >= ONTOLOGY_POOL_SIZE) {
-                        synchronized (poolMon) { poolMon.wait(); }
-                    } else {
-                        OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
-                                Paths.get("eventOntology.xml"));
-                        pool.add(oh);
-                        log.info("pool: new ontology added, now " + pool.size());
-                    }
-                } catch (OWLOntologyCreationException e) {
-                    log.error("pool: ontology creation error", e);
-                } catch (InterruptedException e) {
-                    // ignore it
-                }
-            }
-        }).start();
-    }
-
-    private OntologyHelper newOntologyHelper() throws OWLOntologyCreationException {
-        if (!pool.isEmpty()) {
-            OntologyHelper oh = pool.poll();
-            synchronized (poolMon) { poolMon.notify(); }
-            return oh;
-        } else {
-            return new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
-                    Paths.get("eventOntology.xml"));
-        }
+        startOntologyPoolThread();
     }
 
     public JsonObject event(JsonObject jsonEvent) {
+        log.debug("--- original json input:");
+        log.debug(gson.toJson(jsonEvent));
         try {
             OntologyHelper oh = newOntologyHelper();
             OntologyHelper.OClass inputCls = oh.cls("INPUT");
-            OntologyHelper.OClass outputCls = oh.cls("OUTPUT");
+            OntologyHelper.OClass acceptCls = oh.cls("ACCEPT");
+            OntologyHelper.OClass generateCls = oh.cls("GENERATE");
 
             // root individual for all incoming data
             OntologyHelper.OIndividual input = oh.ind("input");
             input.addType(inputCls);
 
-            // root individual for all outgoing data
-            OntologyHelper.OIndividual output = oh.ind("output");
-            output.addType(outputCls);
+            // root individual for all accept assertions
+            OntologyHelper.OIndividual accept = oh.ind("accept");
+            accept.addType(acceptCls);
 
-            new JsonLoader(oh).load(input, jsonEvent, output);
+            // root individual for all generated calls
+            OntologyHelper.OIndividual generate = oh.ind("generate");
+            generate.addType(generateCls);
+
+            new JsonLoader(oh).load(input, jsonEvent, accept);
 
             // oh.print();
             // oh.printAsXML();
             // oh.saveAsXML(Paths.get("event.out.xml"));
 
-            // System.out.println("--- dumped input:");
-            // System.out.println(gson.toJson(new JsonDumper(oh).dump(input)));
-            // System.out.println("");
+            // log.debug("--- dumped input:");
+            // log.debug(gson.toJson(new JsonDumper(oh).dump(input)));
+            // log.debug("");
 
             oh.execRulesFromDir(Paths.get("rules"));
 
-            // System.out.println("--- dumped output:");
-            // System.out.println(gson.toJson(new JsonDumper(oh).dump(output)));
-            // System.out.println("");
+            log.debug("--- dumped accept and generate:");
+            log.debug(gson.toJson(new JsonDumper(oh).dump(accept)));
+            log.debug(gson.toJson(new JsonDumper(oh).dump(generate)));
+            log.debug("");
 
-            JsonObject jsonEventOutput = new JsonDumper(oh).dump(output);
+            JsonObject jsonEventGenerate = new JsonDumper(oh).dump(generate);
+            Generator.fromJson(jsonEventGenerate).handle();
+
+            JsonObject jsonEventOutput = new JsonDumper(oh).dump(accept);
             return jsonEventOutput;
         } catch (OWLOntologyCreationException e) {
             log.error("Ontology creation error: ", e);
@@ -96,5 +73,46 @@ public class DirectiveEngine {
             log.error("Error: ", e);
         }
         return null;
+    }
+
+    public static int ONTOLOGY_POOL_SIZE = 10;
+    private Queue<OntologyHelper> pool = new ConcurrentLinkedQueue();
+    private Object poolMon = new Object();
+
+    private OntologyHelper newOntologyHelper() throws OWLOntologyCreationException {
+        OntologyHelper oh = pool.poll();
+        if (oh != null) {
+            synchronized (poolMon) { poolMon.notify(); }
+            return oh;
+        } else {
+            return new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
+                    Paths.get("eventOntology.xml"));
+        }
+    }
+
+    private void startOntologyPoolThread() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        if (pool.size() >= ONTOLOGY_POOL_SIZE) {
+                            synchronized (poolMon) {
+                                poolMon.wait();
+                            }
+                        } else {
+                            OntologyHelper oh = new OntologyHelper("dex:", "http://eudat.eu/ns/dex#",
+                                    Paths.get("eventOntology.xml"));
+                            pool.add(oh);
+                            log.debug("pool: new ontology added, now " + pool.size());
+                        }
+                    } catch (OWLOntologyCreationException e) {
+                        log.error("pool: ontology creation error", e);
+                    } catch (InterruptedException e) {
+                        // ignore it
+                    }
+                }
+            }
+        }).start();
     }
 }

@@ -160,7 +160,7 @@ class OntologyHelper {
                 for (OWLNamedIndividual v: reasoner.getObjectPropertyValues(i, p).getFlattened()) {
                     String k = p.getIRI().getShortForm();
                     if (!ret.containsKey(k)) {
-                        ret.put(k, new ArrayList<>());
+                        ret.put(k, new ArrayList<OIndividual>());
                     }
                     ret.get(k).add(new OIndividual(v));
                 }
@@ -174,7 +174,7 @@ class OntologyHelper {
                 for (OWLLiteral v: reasoner.getDataPropertyValues(i, p)) {
                     String k = p.getIRI().getShortForm();
                     if (!ret.containsKey(k)) {
-                        ret.put(k, new ArrayList<>());
+                        ret.put(k, new ArrayList<JsonPrimitive>());
                     }
                     if (v.isBoolean()) {
                         ret.get(k).add(new JsonPrimitive(v.parseBoolean()));

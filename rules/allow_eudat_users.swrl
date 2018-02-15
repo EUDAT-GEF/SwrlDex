@@ -1,10 +1,8 @@
 dex:user(input, ?u) ^
 dex:role(?u, ?ur) ^
 dex:communityname(?ur, ?commname) ^
-swrlb:stringEqualIgnoreCase(?commname, "eudat") ^
-dex:environment(output, ?outenvironment) ^
-dex:limits(?outenvironment, ?outlimits)
+swrlb:stringEqualIgnoreCase(?commname, "eudat")
 
 ->
 
-dex:allow(output, true)
+dex:allow(accept, true)

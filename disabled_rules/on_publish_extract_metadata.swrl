@@ -1,0 +1,14 @@
+dex:event(input, ?e) ^
+dex:action(?e, ?a) ^
+swrlb:equals(?a, "publish-record") ^
+dex:resource(input, ?r) ^
+dex:args(?r, ?_arg) ^
+dex:data(?_arg, ?_data) ^
+dex:community(?_data, 'e9b9792e-79fb-4b07-b6b4-b9c2bd06d095')
+dex:recordid(?_arg, ?rid) ^
+
+->
+
+dex:url(generate, 'http://localhost/api/') ^
+dex:method(generate, 'POST') ^
+dex:formdata(generate, ?rid) ^
