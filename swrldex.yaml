@@ -13,7 +13,7 @@ logging:
     # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL.
     level: WARN
     loggers:
-        eu.eudat.swrldex: INFO
+        eu.eudat.swrldex: DEBUG
 
     appenders:
         - type: console
